@@ -19,6 +19,7 @@ const useStyles = makeStyles({
     background: '#28343F',
     width: '100%',
     padding: 20,
+    height: '80%',
   },
   root: {
     display: 'flex',

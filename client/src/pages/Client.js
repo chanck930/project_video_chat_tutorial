@@ -1,7 +1,8 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import Sidebar from '../components/Sidebar';
+import BroadcastBar from '../components/BroadcastBar';
 import Notifications from '../components/Notifications';
+import VideoPlayer from '../components/VideoPlayer';
 
 const useStyles = makeStyles({
   wrapper: {
@@ -17,9 +18,10 @@ const Client = () => {
 
   return (
     <div className={classes.wrapper}>
-      <Sidebar>
+      <VideoPlayer />
+      <BroadcastBar>
         <Notifications />
-      </Sidebar>
+      </BroadcastBar>
     </div>
   );
 };
