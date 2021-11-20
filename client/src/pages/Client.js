@@ -3,6 +3,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import BroadcastBar from '../components/BroadcastBar';
 import Notifications from '../components/Notifications';
 import VideoPlayer from '../components/VideoPlayer';
+// import selfCamVideoPlayer from '../components/selfCamVideoPlayer';
 
 const useStyles = makeStyles({
   wrapper: {
