@@ -40,7 +40,7 @@ const useStyles = makeStyles({
   },
   AppBar: {
     width: 'calc(100% - 240px)',
-    background: '#0080E0',
+    background: '#303f9f',
   },
   toolbar: {
     height: '80px',
@@ -57,12 +57,12 @@ export default function Layout({ children }) {
 
   const menuItems = [
     {
-      text: 'Base',
+      text: 'Watch',
       icon: <AppsIcon style={{ color: '#303f9f' }} />,
       path: '/',
     },
     {
-      text: 'Camera',
+      text: 'Start Broadcast',
       icon: <VideoCameraFrontIcon style={{ color: '#303f9f' }} />,
       path: '/Client',
     },

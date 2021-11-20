@@ -1,7 +1,7 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import VideoPlayer from '../components/VideoPlayer';
-import Sidebar from '../components/Sidebar';
+import Sidebar1 from '../components/Sidebar1';
 import Notifications from '../components/Notifications';
 
 const useStyles = makeStyles({
@@ -19,9 +19,9 @@ const Home = () => {
   return (
     <div className={classes.wrapper}>
       <VideoPlayer />
-      <Sidebar>
+      <Sidebar1>
         <Notifications />
-      </Sidebar>
+      </Sidebar1>
     </div>
   );
 };
