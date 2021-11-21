@@ -2,9 +2,10 @@ import React, { useRef, useEffect, useState, useContext } from 'react';
 import { v1 as uuid } from "uuid";
 import styled from "styled-components";
 import Peer from "simple-peer";
-//  import * as tf from '@tensorflow/tfjs';
+import * as tf from '@tensorflow/tfjs';
 import * as facemesh from '@tensorflow-models/facemesh';
 import { Grid, Typography, Paper, makeStyles } from '@material-ui/core';
+import Webcam from "react-webcam";
 import io from "socket.io-client";
 import { drawMesh } from '../components/utilities';
 
@@ -22,12 +23,26 @@ const useStyles = makeStyles((theme) => ({
     width: '100%',
   },
   video: {
-    width: '640px',
-    height: '480px',
+    width: '550px',
+    height: '413px',
+    textAlign: "center",
+    zindex: 9,
     [theme.breakpoints.down('xs')]: {
       width: '480px',
     },
   },
+    canvas: {
+      width: '550px',
+      height: '413px',
+      textAlign: "center",
+      position: 'relative',
+      top:'-460px',
+      left:'40px',
+      zindex: 11,
+      [theme.breakpoints.down('xs')]: {
+        width: '550px',
+      },
+    },
   gridContainer: {
     justifyContent: 'center',
     [theme.breakpoints.down('xs')]: {
@@ -38,6 +53,10 @@ const useStyles = makeStyles((theme) => ({
     padding: '10px',
     border: '2px solid black',
     margin: '30px',
+  },
+  container: {
+    display: 'inline-block',
+    position: 'relative',
   },
 }));
 
@@ -50,11 +69,6 @@ const useStyles = makeStyles((theme) => ({
     flex-wrap: wrap;
 `;*/
 
-const StyledVideo = styled.video`
-    height: 480px;
-    width: 640px;
-`;
-
 const Video = (props) => {
     const classes = useStyles();
     const ref = useRef();
@@ -66,7 +80,7 @@ const Video = (props) => {
     }, []);
 
     return (
-        <StyledVideo playsInline autoPlay ref={ref} className={classes.video}/>
+        <Webcam playsInline autoPlay ref={ref} className={classes.video}/>
     );
 }
 
@@ -88,7 +102,7 @@ const CreateRoom = () => {
 
 const Client = () => {
   const classes = useStyles();
-  const canvasRef = useRef(null);
+  const canvasRef = useRef();
   const [peers, setPeers] = useState([]);
   const socketRef = useRef();
   const userVideo = useRef();
@@ -103,7 +117,7 @@ const Client = () => {
     });
     setInterval(() => {
       detect(net)
-    }, 100);
+    }, 100)
   };
     // Detect
   const detect = async (net) => {
@@ -111,17 +125,21 @@ const Client = () => {
     && userVideo.current !== null
     && userVideo.current.video.readyState === 4
     ) {
-      // Get Video properties
-      const video1 = userVideo.current.video;
-      userVideo.current.width = '640px';
-      userVideo.current.height = '480px';
+     // Get Video Properties
+     const video1 = userVideo.current.video;
+     const videoWidth = userVideo.current.video.videoWidth;
+     const videoHeight = userVideo.current.video.videoHeight;
 
-      // Set canvas width
-      canvasRef.current.width = '640px';
-      canvasRef.current.height = '480px';
+     // Set video width
+     userVideo.current.video.width = videoWidth;
+     userVideo.current.video.height = videoHeight;
+
+     // Set canvas width
+     canvasRef.current.width = videoWidth;
+     canvasRef.current.height = videoHeight;
 
       // make detections
-      const face = await net.estimate(video1);
+      const face = await net.estimateFaces(video1);
       console.log(face);
 
       // get canvas context for drawing
@@ -130,7 +148,7 @@ const Client = () => {
     }
   };
 
-  // runFacemesh();
+  runFacemesh();
 
   useEffect(() => {
       // socketRef.current = io.connect("/");
@@ -199,21 +217,23 @@ const Client = () => {
   }
 
   return (
-    <div className={classes.wrapper}>
     <Grid container className={classes.gridContainer}>
+    <div className={classes.Container}>
     <Paper className={classes.paper}>
+     <Grid item xs={12} md={6}>
             <Typography variant="h5" gutterBottom>Your WebCam</Typography>
-            <Grid item xs={12} md={6}>
-            <StyledVideo muted ref={userVideo} autoPlay playsInline className={classes.video}/>
+            <Webcam muted ref={userVideo} autoPlay playsInline className={classes.video}/> 
             {/* {peers.map((peer, index) => {
                 return (
                     <Video key={index} peer={peer} />
                 );
             })} */}
-          </Grid>
-        </Paper>
-    </Grid>
-    </div>
+      </Grid>
+      </Paper>
+        <canvas ref={canvasRef} className={classes.canvas} />
+      </div>
+      </Grid>
+     
   );
 };
 
