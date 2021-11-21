@@ -5,7 +5,8 @@ import { SocketContext } from '../Context';
 
 const useStyles = makeStyles((theme) => ({
   video: {
-    width: '550px',
+    width: '640px',
+    height: '480px',
     [theme.breakpoints.down('xs')]: {
       width: '300px',
     },

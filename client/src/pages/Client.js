@@ -1,10 +1,13 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useContext } from 'react';
 import { v1 as uuid } from "uuid";
-import { makeStyles } from '@material-ui/core/styles';
 import styled from "styled-components";
 import Peer from "simple-peer";
+//  import * as tf from '@tensorflow/tfjs';
+import * as facemesh from '@tensorflow-models/facemesh';
+import { Grid, Typography, Paper, makeStyles } from '@material-ui/core';
 import io from "socket.io-client";
-import { Grid, Typography, Paper } from '@material-ui/core';
+import { drawMesh } from '../components/utilities';
+
 
 // import BroadcastBar from '../components/BroadcastBar';
 // import Notifications from '../components/Notifications';
@@ -19,9 +22,10 @@ const useStyles = makeStyles((theme) => ({
     width: '100%',
   },
   video: {
-    width: '550px',
+    width: '640px',
+    height: '480px',
     [theme.breakpoints.down('xs')]: {
-      width: '300px',
+      width: '480px',
     },
   },
   gridContainer: {
@@ -37,21 +41,22 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Container = styled.div`
+/* const Container = styled.div`
     padding: 20px;
     display: flex;
     height: 100vh;
     width: 90%;
     margin: auto;
     flex-wrap: wrap;
-`;
+`;*/
 
 const StyledVideo = styled.video`
-    height: 40%;
-    width: 50%;
+    height: 480px;
+    width: 640px;
 `;
 
 const Video = (props) => {
+    const classes = useStyles();
     const ref = useRef();
 
     useEffect(() => {
@@ -61,15 +66,15 @@ const Video = (props) => {
     }, []);
 
     return (
-        <StyledVideo playsInline autoPlay ref={ref} />
+        <StyledVideo playsInline autoPlay ref={ref} className={classes.video}/>
     );
 }
 
 
-const videoConstraints = {
+/* const videoConstraints = {
     height: window.innerHeight / 2,
     width: window.innerWidth / 2
-};
+};*/
 
 const CreateRoom = () => {
   function create() {
@@ -83,13 +88,49 @@ const CreateRoom = () => {
 
 const Client = () => {
   const classes = useStyles();
-
+  const canvasRef = useRef(null);
   const [peers, setPeers] = useState([]);
   const socketRef = useRef();
   const userVideo = useRef();
   const peersRef = useRef([]);
   // const roomID = props.match.params.roomID;
   const roomID = '1234';
+
+  // Load facemesh
+  const runFacemesh = async () => {
+    const net = await facemesh.load({
+      inputResolution: { width: '640px', height: '480px' }, scale: 0.8,
+    });
+    setInterval(() => {
+      detect(net)
+    }, 100);
+  };
+    // Detect
+  const detect = async (net) => {
+    if (typeof userVideo.current !== 'undefined'
+    && userVideo.current !== null
+    && userVideo.current.video.readyState === 4
+    ) {
+      // Get Video properties
+      const video1 = userVideo.current.video;
+      userVideo.current.width = '640px';
+      userVideo.current.height = '480px';
+
+      // Set canvas width
+      canvasRef.current.width = '640px';
+      canvasRef.current.height = '480px';
+
+      // make detections
+      const face = await net.estimate(video1);
+      console.log(face);
+
+      // get canvas context for drawing
+      const ctx = canvasRef.current.getContext('2d');
+      drawMesh(face, ctx);
+    }
+  };
+
+  // runFacemesh();
 
   useEffect(() => {
       // socketRef.current = io.connect("/");
@@ -158,17 +199,21 @@ const Client = () => {
   }
 
   return (
+    <div className={classes.wrapper}>
+    <Grid container className={classes.gridContainer}>
     <Paper className={classes.paper}>
-        <Grid item xs={12} md={6}>
             <Typography variant="h5" gutterBottom>Your WebCam</Typography>
-            <StyledVideo muted ref={userVideo} autoPlay playsInline />
+            <Grid item xs={12} md={6}>
+            <StyledVideo muted ref={userVideo} autoPlay playsInline className={classes.video}/>
             {/* {peers.map((peer, index) => {
                 return (
                     <Video key={index} peer={peer} />
                 );
             })} */}
-        </Grid>
-    </Paper>
+          </Grid>
+        </Paper>
+    </Grid>
+    </div>
   );
 };
 

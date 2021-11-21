@@ -17,9 +17,9 @@ const useStyles = makeStyles((theme) => ({
       width: '100%',
     },
     video: {
-      width: '550px',
+      width: '640px',
       [theme.breakpoints.down('xs')]: {
-        width: '300px',
+        width: '480px',
       },
     },
     gridContainer: {

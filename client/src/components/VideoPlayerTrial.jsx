@@ -1,9 +1,8 @@
 import React, { useRef, useContext } from 'react';
 //  import * as tf from '@tensorflow/tfjs';
 import * as facemesh from '@tensorflow-models/facemesh';
-import { drawMesh } from './utilities';
 import { Grid, Typography, Paper, makeStyles } from '@material-ui/core';
-
+import { drawMesh } from './utilities';
 import { SocketContext } from '../Context';
 
 const useStyles = makeStyles((theme) => ({
@@ -27,7 +26,14 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const VideoPlayerTrial = () => {
+const VideoPlayerTrial = (props) => {
+  const ref = useRef();
+  useEffect(() => {
+      props.peer.on("stream", stream => {
+        ref.current.srcObject = stream;
+    })
+  }, []);
+}
   const canvasRef = useRef(null);
   const { name, callAccepted, myVideo, userVideo, callEnded, stream, call } = useContext(SocketContext);
   const classes = useStyles();
@@ -38,7 +44,7 @@ const VideoPlayerTrial = () => {
     });
     setInterval(() => {
       detect(net)
-    }, 100)
+    }, 100);
   };
     // Detect
   const detect = async (net) => {
@@ -52,15 +58,15 @@ const VideoPlayerTrial = () => {
       myVideo.current.height = '480px';
 
       // Set canvas width
-      canvasRef.current.width = videoWidth;
-      canvasRef.current.height = videoHeight;
+      canvasRef.current.width = '640px';
+      canvasRef.current.height = '480px';
 
       // make detections
       const face = await net.estimate(video1);
       console.log(face);
 
       // get canvas context for drawing
-      const ctx = canvasRef.current.getContext("2d");
+      const ctx = canvasRef.current.getContext('2d');
       drawMesh(face, ctx);
     }
   };
@@ -69,26 +75,14 @@ const VideoPlayerTrial = () => {
 
   return (
     <Grid container className={classes.gridContainer}>
-      {stream && (
         <Paper className={classes.paper}>
           <Grid item xs={12} md={6}>
-            <Typography variant="h5" gutterBottom>{name || 'Video'}</Typography>
-            <video playsInline muted ref={myVideo} autoPlay className={classes.video} />
-            <canvas ref = {canvasrRef} className={classes.video} />
+            <StyledVideo playsInline autoPlay ref={ref} className={classes.video} />
+            <canvas ref={canvasRef} className={classes.video} />
           </Grid>
         </Paper>
-      )}
-      {callAccepted && !callEnded && (
-        <Paper className={classes.paper}>
-          <Grid item xs={12} md={6}>
-            <Typography variant="h5" gutterBottom>{call.name || 'Video'}</Typography>
-            <video playsInline ref={userVideo} autoPlay className={classes.video} />
-            <canvas ref = {canvasrRef} className={classes.video} />
-          </Grid>
-        </Paper>
-      )}
     </Grid>
-  );
+
 };
 
 export default VideoPlayerTrial;
