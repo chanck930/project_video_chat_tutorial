@@ -5,11 +5,12 @@ import { SocketContext } from '../Context';
 // import { KeyboardReturnOutlined } from '@material-ui/icons';
 
 const Notifications = () => {
+  // eslint-disable-next-line no-unused-vars
   const { answerCall, call, callAccepted } = useContext(SocketContext);
 
-  if (call.isReceivingCall && !callAccepted) {
-    answerCall();
-  }
+  // if (call.isReceivingCall && !callAccepted) {
+  //   answerCall();
+  // }
 
   return (
     <>
