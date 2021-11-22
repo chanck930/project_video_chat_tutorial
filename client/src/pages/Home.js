@@ -85,21 +85,29 @@ const Home = () => {
     navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
         // stream = new MediaStream();
         // userVideo.current.srcObject = stream;
-        socketRef.current.emit("join room", roomID);
-        socketRef.current.on("all users", users => {
+        socketRef.current.emit("client join room", roomID);
+        socketRef.current.on("server users", user => {
+            console.log("on server users");
             const peers = [];
-            users.forEach(userID => {
-                const peer = createPeer(userID, socketRef.current.id, stream);
-                peersRef.current.push({
-                    peerID: userID,
-                    peer,
-                })
-                peers.push(peer);
+            // users.forEach(userID => {
+            //     const peer = createPeer(userID, socketRef.current.id, stream);
+            //     peersRef.current.push({
+            //         peerID: userID,
+            //         peer,
+            //     })
+            //     peers.push(peer);
+            // })
+            const peer = createPeer(user, socketRef.current.id, stream);
+            peersRef.current.push({
+                peerID: user,
+                peer,
             })
+            peers.push(peer);
             setPeers(peers);
         })
 
         socketRef.current.on("user joined", payload => {
+            console.log("on user joined");
             const peer = addPeer(payload.signal, payload.callerID, stream);
             peersRef.current.push({
                 peerID: payload.callerID,
@@ -110,6 +118,7 @@ const Home = () => {
         });
 
         socketRef.current.on("receiving returned signal", payload => {
+            console.log("on receiving returned signal");
             const item = peersRef.current.find(p => p.peerID === payload.id);
             item.peer.signal(payload.signal);
         });

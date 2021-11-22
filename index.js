@@ -19,28 +19,42 @@ app.get('/', (req, res) => {
 
 const users = {};
 
+let serverUser = null;
+
 const socketToRoom = {};
 
 io.on('connection', socket => {
     console.log('connection ' + socket.id);
 
-    socket.on("join room", roomID => {
+    socket.on("server join room", roomID => {
         if (users[roomID]) {
             const length = users[roomID].length;
-            // if (length === 4) {
-            //     socket.emit("room full");
-            //     return;
-            // }
             users[roomID].push(socket.id);
-            console.log('join room ' + socket.id);
+            console.log('server join room ' + socket.id);
         } else {
             users[roomID] = [socket.id];
-            console.log('create room ' + socket.id);
+            console.log('server create room ' + socket.id);
         }
+        serverUser = socket.id;
         socketToRoom[socket.id] = roomID;
         const usersInThisRoom = users[roomID].filter(id => id !== socket.id);
 
-        socket.emit("all users", usersInThisRoom);
+        socket.emit("all client users", usersInThisRoom);
+    });
+    
+    socket.on("client join room", roomID => {
+        if (users[roomID]) {
+            const length = users[roomID].length;
+            users[roomID].push(socket.id);
+            console.log('client join room ' + socket.id);
+        } else {
+            users[roomID] = [socket.id];
+            console.log('client create room ' + socket.id);
+        }
+        socketToRoom[socket.id] = roomID;
+        // const usersInThisRoom = users[roomID].filter(id => id !== socket.id);
+
+        socket.emit("server users", serverUser);
     });
 
     socket.on("sending signal", payload => {

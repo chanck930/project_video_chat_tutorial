@@ -140,7 +140,7 @@ const Client = () => {
 
       // make detections
       const face = await net.estimateFaces(video1);
-      console.log(face);
+      // console.log(face);
 
       // get canvas context for drawing
       const ctx = canvasRef.current.getContext('2d');
@@ -155,8 +155,9 @@ const Client = () => {
       socketRef.current = io('http://localhost:5000');
       navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
           userVideo.current.srcObject = stream;
-          socketRef.current.emit("join room", roomID);
-          socketRef.current.on("all users", users => {
+          socketRef.current.emit("server join room", roomID);
+          socketRef.current.on("all client users", users => {
+              console.log("on all client users");
               const peers = [];
               users.forEach(userID => {
                   const peer = createPeer(userID, socketRef.current.id, stream);
@@ -170,6 +171,7 @@ const Client = () => {
           })
 
           socketRef.current.on("user joined", payload => {
+              console.log("on user joined");
               const peer = addPeer(payload.signal, payload.callerID, stream);
               peersRef.current.push({
                   peerID: payload.callerID,
@@ -180,6 +182,7 @@ const Client = () => {
           });
 
           socketRef.current.on("receiving returned signal", payload => {
+              console.log("on receiving returned signal");
               const item = peersRef.current.find(p => p.peerID === payload.id);
               item.peer.signal(payload.signal);
           });
@@ -219,20 +222,15 @@ const Client = () => {
   return (
     <Grid container className={classes.gridContainer}>
     <div className={classes.Container}>
-    <Paper className={classes.paper}>
-     <Grid item xs={12} md={6}>
-            <Typography variant="h5" gutterBottom>Your WebCam</Typography>
-            <Webcam muted ref={userVideo} autoPlay playsInline className={classes.video}/> 
-            {/* {peers.map((peer, index) => {
-                return (
-                    <Video key={index} peer={peer} />
-                );
-            })} */}
-      </Grid>
+      <Paper className={classes.paper}>
+        <Grid item xs={12} md={6}>
+          <Typography variant="h5" gutterBottom>Your WebCam</Typography>
+          <Webcam muted ref={userVideo} autoPlay playsInline className={classes.video}/> 
+        </Grid>
       </Paper>
-        <canvas ref={canvasRef} className={classes.canvas} />
-      </div>
-      </Grid>
+      <canvas ref={canvasRef} className={classes.canvas} />
+    </div>
+    </Grid>
      
   );
 };
