@@ -56,18 +56,19 @@ const Video = (props) => {
     useEffect(() => {
         props.peer.on("stream", stream => {
             ref.current.srcObject = stream;
+            console.log("stream active: " + stream.active);
         })
     }, []);
 
     return (
-        <StyledVideo playsInline autoPlay ref={ref} />
-        // <Webcam ref={ref} autoPlay playsInline className={props.classes}/> 
+        <video playsInline autoPlay ref={ref} height={videoConstraints.height} width={videoConstraints.width}/>
+        // <Webcam ref={ref} autoPlay playsInline videoConstraints={videoConstraints}/> 
     );
 }
 
-const videoConstraints = {
-    height: window.innerHeight / 2,
-    width: window.innerWidth / 2
+const videoConstraints = {  // trying to follow broadcasting video size
+    height: 480,
+    width: 640
 };
 
 // function createEmptyVideoTrack({ width, height }) {
@@ -84,6 +85,7 @@ const Home = () => {
     const classes = useStyles();
 
     const [peers, setPeers] = useState([]);
+    const [serverStatus, setServerStatus] = useState(false);
     const socketRef = useRef();
     const userVideo = useRef();
     const peersRef = useRef([]);
@@ -106,14 +108,19 @@ const Home = () => {
         socketRef.current.emit("client join room", roomID);
         socketRef.current.on("server users", user => {
             console.log("on server users");
-            const peers = [];
-            const peer = createPeer(user, socketRef.current.id, stream);
-            peersRef.current.push({
-                peerID: user,
-                peer,
-            })
-            peers.push(peer);
-            setPeers(peers);
+            console.log("server user: " + user);
+            if (user != null) {
+                setServerStatus(true);
+                
+                const peers = [];
+                const peer = createPeer(user, socketRef.current.id, stream);
+                peersRef.current.push({
+                    peerID: user,
+                    peer,
+                })
+                peers.push(peer);
+                setPeers(peers);
+            }
         })
 
         socketRef.current.on("user joined", payload => {
@@ -190,15 +197,15 @@ const Home = () => {
         <Typography variant="h5" gutterBottom>Your WebCam</Typography>
         <Webcam muted ref={userVideo} autoPlay playsInline className={classes.video}/> 
         <Typography variant="h5" gutterBottom>WebCam Server</Typography>
-        {/* <Webcam muted ref={userVideo} autoPlay playsInline className={classes.video}/>  */}
+        {console.log('server '+ serverStatus)}
         {peers.map((peer, index) => {
-                console.log("index " + index);
-                    if (index === 0) {
-                        return (
-                            <Video peer={peer} className={classes.video}/>
-                        )
-                    }
-                })}
+            console.log("index " + index);
+            // if (index === 0) {
+                return (
+                    <Video key={index} peer={peer} className={classes.video}/>
+                )
+            // }
+        })}
         </Grid>
     </Paper>
     </div>
