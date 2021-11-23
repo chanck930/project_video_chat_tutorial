@@ -132,6 +132,7 @@ const Home = () => {
             })
 
             setPeers(users => [...users, peer]);
+            setServerStatus(true);
         });
 
         socketRef.current.on("receiving returned signal", payload => {
@@ -139,6 +140,12 @@ const Home = () => {
             const item = peersRef.current.find(p => p.peerID === payload.id);
             item.peer.signal(payload.signal);
         });
+
+        // socketRef.current.on("server disconnect", () => {
+        //     console.log("server disconnected");
+        //     setServerStatus(false);
+        // });
+
     }, (error) => console.error(error))
 }, []);
 
@@ -194,18 +201,23 @@ const Home = () => {
     <div className={classes.Container}>
     <Paper className={classes.paper}>
         <Grid item xs={12} md={6}>
-        <Typography variant="h5" gutterBottom>Your WebCam</Typography>
-        <Webcam muted ref={userVideo} autoPlay playsInline className={classes.video}/> 
-        <Typography variant="h5" gutterBottom>WebCam Server</Typography>
-        {console.log('server '+ serverStatus)}
-        {peers.map((peer, index) => {
-            console.log("index " + index);
-            // if (index === 0) {
-                return (
-                    <Video key={index} peer={peer} className={classes.video}/>
-                )
-            // }
-        })}
+            <Typography variant="h5" gutterBottom>Your WebCam</Typography>
+            <Webcam muted ref={userVideo} autoPlay playsInline className={classes.video}/> 
+            <Typography variant="h5" gutterBottom>WebCam Server</Typography>
+            {console.log('server '+ serverStatus)}
+            {/* {console.log("length: " + peers.length)} */}
+            {serverStatus ? 
+                (peers.map((peer, index) => {
+                    if (index === peers.length - 1) {
+                        return (
+                            <Video key={index} peer={peer} className={classes.video}/>
+                        )
+                    }
+                })) :
+                    <Paper className={classes.paper}>
+                        <Typography variant="h5" gutterBottom>Server Offline</Typography>
+                    </Paper>
+            }
         </Grid>
     </Paper>
     </div>

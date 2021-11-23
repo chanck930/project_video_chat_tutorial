@@ -75,6 +75,11 @@ io.on('connection', socket => {
             room = room.filter(id => id !== socket.id);
             users[roomID] = room;
         }
+        if (serverUser == socket.id) {
+            console.log('server disconnect ' + socket.id);
+            socket.emit("server disconnect", serverUser);
+            serverUser = null;
+        }
     });
 
 });
