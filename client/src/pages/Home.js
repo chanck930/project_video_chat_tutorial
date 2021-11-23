@@ -4,6 +4,7 @@ import Peer from "simple-peer";
 import io from "socket.io-client";
 import styled from 'styled-components';
 import { Grid, Typography, Paper } from '@material-ui/core';
+import Webcam from "react-webcam";
 
 // import VideoPlayer from '../components/VideoPlayer';
 // import Sidebar1 from '../components/Sidebar1';
@@ -45,8 +46,8 @@ const Container = styled.div`
 `;
 
 const StyledVideo = styled.video`
-    height: 40%;
-    width: 50%;
+    height: 100%;
+    width: 100%;
 `;
 
 const Video = (props) => {
@@ -60,43 +61,52 @@ const Video = (props) => {
 
     return (
         <StyledVideo playsInline autoPlay ref={ref} />
+        // <Webcam ref={ref} autoPlay playsInline className={props.classes}/> 
     );
 }
-
 
 const videoConstraints = {
     height: window.innerHeight / 2,
     width: window.innerWidth / 2
 };
 
-const Home = () => {
-  const classes = useStyles();
+// function createEmptyVideoTrack({ width, height }) {
+//     const canvas = Object.assign(document.createElement('canvas'), { width, height });
+//     canvas.getContext('2d').fillRect(0, 0, width, height);
 
-  const [peers, setPeers] = useState([]);
-  const socketRef = useRef();
-  const userVideo = useRef();
-  const peersRef = useRef([]);
-  // const roomID = props.match.params.roomID;
-  const roomID = '1234';
+//     const stream = canvas.captureStream();
+//     const track = stream.getVideoTracks()[0];
+
+//     return Object.assign(track, { enabled: false });
+// };
+
+const Home = () => {
+    const classes = useStyles();
+
+    const [peers, setPeers] = useState([]);
+    const socketRef = useRef();
+    const userVideo = useRef();
+    const peersRef = useRef([]);
+    // const roomID = props.match.params.roomID;
+    const roomID = '1234';
+
+    // const videoTrack = createEmptyVideoTrack(videoConstraints)
+    // const dummyStream = new MediaStream([videoTrack]);
+    
 
   useEffect(() => {
     // socketRef.current = io.connect("/");
     socketRef.current = io('http://localhost:5000');
-    navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
-        // stream = new MediaStream();
-        // userVideo.current.srcObject = stream;
+    navigator.mediaDevices.getUserMedia({ video: true, audio: false }).then((stream) => {
+        // stream = dummyStream;
+        // console.log(stream);
+        // console.log(dummyStream);
+        
+        userVideo.current.srcObject = stream;
         socketRef.current.emit("client join room", roomID);
         socketRef.current.on("server users", user => {
             console.log("on server users");
             const peers = [];
-            // users.forEach(userID => {
-            //     const peer = createPeer(userID, socketRef.current.id, stream);
-            //     peersRef.current.push({
-            //         peerID: userID,
-            //         peer,
-            //     })
-            //     peers.push(peer);
-            // })
             const peer = createPeer(user, socketRef.current.id, stream);
             peersRef.current.push({
                 peerID: user,
@@ -118,11 +128,11 @@ const Home = () => {
         });
 
         socketRef.current.on("receiving returned signal", payload => {
-            console.log("on receiving returned signal");
+            console.log("on receiving returned signal " + payload.id);
             const item = peersRef.current.find(p => p.peerID === payload.id);
             item.peer.signal(payload.signal);
         });
-    })
+    }, (error) => console.error(error))
 }, []);
 
   function createPeer(userToSignal, callerID, stream) {
@@ -143,7 +153,7 @@ const Home = () => {
       const peer = new Peer({
           initiator: false,
           trickle: false,
-          stream: new MediaStream(),
+          stream,
       })
 
       peer.on("signal", signal => {
@@ -156,30 +166,44 @@ const Home = () => {
   }
 
   return (
-      <Paper className={classes.paper}>
+    //   <Paper className={classes.paper}>
+    //     <Grid item xs={12} md={6}>
+    //   <div className={classes.Container}>
+    //         <Typography variant="h5" gutterBottom>Your WebCam</Typography>
+    //         <Webcam muted ref={userVideo} autoPlay playsInline className={classes.video}/> 
+    //         <Typography variant="h5" gutterBottom>WebCam Server</Typography>
+    //             {/* {peers.map((peer, index) => {
+    //                 if (index === 0) {
+    //                     return (
+    //                         <Video key={index} peer={peer} className={classes.video}/>
+    //                     )
+    //                 }
+    //             })} */}
+    // </div>
+    //     </Grid>
+    // </Paper>
+
+    <Grid container className={classes.gridContainer}>
+    <div className={classes.Container}>
+    <Paper className={classes.paper}>
         <Grid item xs={12} md={6}>
-            <Typography variant="h5" gutterBottom>WebCam Server</Typography>
-            {peers.map((peer, index) => {
-                if (index === 0) {
-                return (
-                    <Video key={index} peer={peer} />
-                )
-            }})}
+        <Typography variant="h5" gutterBottom>Your WebCam</Typography>
+        <Webcam muted ref={userVideo} autoPlay playsInline className={classes.video}/> 
+        <Typography variant="h5" gutterBottom>WebCam Server</Typography>
+        {/* <Webcam muted ref={userVideo} autoPlay playsInline className={classes.video}/>  */}
+        {peers.map((peer, index) => {
+                console.log("index " + index);
+                    if (index === 0) {
+                        return (
+                            <Video peer={peer} className={classes.video}/>
+                        )
+                    }
+                })}
         </Grid>
     </Paper>
+    </div>
+    </Grid>
   );
-
-  // return (
-  //   <div className={classes.wrapper}>
-  //     {/* <video muted ref={userVideo} autoPlay playsInline hidden /> */}
-          
-  //       <Video peer={peer} />
-
-  //     {/* <Sidebar1>
-  //       <Notifications />
-  //     </Sidebar1> */}
-  //   </div>
-  // );
 };
 
 export default Home;
