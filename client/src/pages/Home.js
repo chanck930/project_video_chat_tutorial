@@ -261,6 +261,7 @@ const Home = () => {
                         <Typography variant="h5" gutterBottom>Server Offline</Typography>
                     </Paper>
             }
+            <canvas ref={canvasRef} className={classes.canvas} />
         </Grid>
     </Paper>
     </div>
