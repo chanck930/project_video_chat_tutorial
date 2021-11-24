@@ -155,7 +155,7 @@ const Client = () => {
     }
   };
 
-  runFacemesh();
+  //runFacemesh();
 
   useEffect(() => {
       // socketRef.current = io.connect("/");
@@ -232,7 +232,7 @@ const Client = () => {
     <div className={classes.Container}>
       <Paper className={classes.paper}>
         <Grid item xs={12} md={6}>
-          <Typography variant="h5" gutterBottom>{isFace.toString()}</Typography>
+          <Typography variant="h5" gutterBottom>Your Camera</Typography>
           <Webcam muted ref={userVideo} autoPlay playsInline className={classes.video}/> 
         </Grid>
       </Paper>

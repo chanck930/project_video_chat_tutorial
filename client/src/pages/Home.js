@@ -5,6 +5,9 @@ import io from "socket.io-client";
 import styled from 'styled-components';
 import { Grid, Typography, Paper, Button, Switch, FormControlLabel } from '@material-ui/core';
 import Webcam from "react-webcam";
+import { drawMesh } from '../components/utilities';
+import * as tf from '@tensorflow/tfjs';
+import * as facemesh from '@tensorflow-models/facemesh';
 
 // import VideoPlayer from '../components/VideoPlayer';
 // import Sidebar1 from '../components/Sidebar1';
@@ -99,6 +102,7 @@ const Home = () => {
     const userVideo = useRef();
     const peersRef = useRef([]);
     const classes = useStyles();
+    const ref = useRef();
     // const roomID = props.match.params.roomID;
     const roomID = '1234';
 
@@ -115,13 +119,19 @@ const Home = () => {
 
   const capture = React.useCallback(
     () => {
-      const imageSrc = userVideo.current.getScreenshot();
-      setImage(imageSrc)
+      if (typeof ref.current !== 'undefined'
+        && ref.current !== null
+        && ref.current.video.readyState === 4
+        ){
+      const imageSrc = ref.current.getScreenshot();
+      setImage(imageSrc)}
+      else{
+        alert('error');
+      }
       });
   
 
   const Video = (props) => {
-    const ref = useRef();
 
     useEffect(() => {
         props.peer.on("stream", stream => {
