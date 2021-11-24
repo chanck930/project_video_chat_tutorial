@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import * as tf from '@tensorflow/tfjs';
-import * as facemesh from '@tensorflow-models/facemesh';
+import * as facemesh from "@tensorflow-models/face-landmarks-detection"
 import { drawMesh } from '../components/utilities';
 import { makeStyles } from '@material-ui/core/styles';
 import Peer from "simple-peer";
@@ -74,9 +73,9 @@ const Home = () => {
     const [peers, setPeers] = useState([]);
     const [serverStatus, setServerStatus] = useState(false);
     const socketRef = useRef();
-    const userVideo = useRef();
+    const userVideo = useRef(null);
     const peersRef = useRef([]);
-    const ref = useRef();
+    const ref = useRef(null);
     const canvasRef = useRef();
     // const roomID = props.match.params.roomID;
     const roomID = '1234';
@@ -93,55 +92,56 @@ const Home = () => {
         }, []);
     
         return (
-            <video playsInline autoPlay ref={ref} width = '640px' height = '480px' className={classes.video}/>
+            <Webcam playsInline autoPlay ref={ref} width = '640px' height = '480px' className={classes.video}/>
            // <Webcam playsInline autoPlay ref={ref} className={classes.video}/>
         );
     }
 
-    // Load facemesh
+     // Load facemesh
   const runFacemesh = async () => {
-    const net = await facemesh.load({
-      inputResolution: { width: '640px', height: '480px' }, scale: 0.8,
-    });
+    const net = await facemesh.load(facemesh.SupportedPackages.mediapipeFacemesh);
     setInterval(() => {
-      detect(net)
-    }, 100)
+      detect(net);
+    }, 10);
   };
     // Detect
   const detect = async (net) => {
-    if (typeof ref.current !== 'undefined'
-    && ref.current !== 'null'
-    && ref.current.video.readyState === 4
+    if (
+      typeof userVideo.current !== "undefined" &&
+      userVideo.current !== null &&
+      userVideo.current.video.readyState === 4
     ) {
-     // Get Video Properties
-     const video1 = ref.current.video;
-     const videoWidth = ref.current.video.videoWidth;
-     const videoHeight = ref.current.video.videoHeight;
+      // Get Video Properties
+      const video = userVideo.current.video;
+      const videoWidth = userVideo.current.video.videoWidth;
+      const videoHeight = userVideo.current.video.videoHeight;
 
-     // Set video width
-     ref.current.video.width = videoWidth;
-     ref.current.video.height = videoHeight;
+      // Set video width
+      userVideo.current.video.width = videoWidth;
+      userVideo.current.video.height = videoHeight;
 
-     // Set canvas width
-     ref.current.width = videoWidth;
-     ref.current.height = videoHeight;
+      // Set canvas width
+      userVideo.current.width = videoWidth;
+      userVideo.current.height = videoHeight;
 
-      // make detections
-      const face = await net.estimateFaces(video1);
-      // console.log(face);
+      // Make Detections
+      // OLD MODEL
+      //       const face = await net.estimateFaces(video);
+      // NEW MODEL
+      const face = await net.estimateFaces({input:video});
+      console.log(face);
 
       // get canvas context for drawing
       const ctx = canvasRef.current.getContext('2d');
-      drawMesh(face, ctx);
+      requestAnimationFrame(()=>{drawMesh(face, ctx)});
     }
   };
 
-  runFacemesh();
-
   useEffect(() => {
+    //runFacemesh()
     // socketRef.current = io.connect("/");
-    // socketRef.current = io('http://localhost:5000');
-    socketRef.current = io('https://eie4428-webcam-app.herokuapp.com/');
+    socketRef.current = io('http://localhost:5000');
+    //socketRef.current = io('https://eie4428-webcam-app.herokuapp.com/');
     socketRef.current = io('http://localhost:5000');
     navigator.mediaDevices.getUserMedia({ video: true, audio: false }).then((stream) => {
         // stream = dummyStream;
@@ -262,9 +262,9 @@ const Home = () => {
                         <Typography variant="h5" gutterBottom>Server Offline</Typography>
                     </Paper>
             }
-            <canvas ref={canvasRef} className={classes.canvas} />
         </Grid>
     </Paper>
+    <canvas ref={canvasRef} className={classes.canvas} />
     </div>
     </Grid>
   );

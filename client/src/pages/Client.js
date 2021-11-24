@@ -3,11 +3,11 @@ import { v1 as uuid } from "uuid";
 import styled from "styled-components";
 import Peer from "simple-peer";
 import * as tf from '@tensorflow/tfjs';
-import * as facemesh from '@tensorflow-models/facemesh';
 import { Grid, Typography, Paper, makeStyles, Switch } from '@material-ui/core';
 import Webcam from "react-webcam";
 import io from "socket.io-client";
 import { drawMesh } from '../components/utilities';
+import * as facemesh from "@tensorflow-models/face-landmarks-detection";
 
 
 // import BroadcastBar from '../components/BroadcastBar';
@@ -105,63 +105,56 @@ const Client = () => {
   const canvasRef = useRef();
   const [peers, setPeers] = useState([]);
   const socketRef = useRef();
-  const userVideo = useRef();
+  const userVideo = useRef(null);
   const peersRef = useRef([]);
   // const roomID = props.match.params.roomID;
   const roomID = '1234';
-
-  const ToggleButtonOnOff = () => {
-    const [isOff, setIsOff] = useState(true);
-  
-    return (
-      <button onClick={() => setIsOff(!isOff)}>{ isOff ? 'ON' : 'OFF' }</button>
-    );
-  };
   
   // Load facemesh
   const runFacemesh = async () => {
-    const net = await facemesh.load({
-      inputResolution: { width: '640px', height: '480px' }, scale: 0.8,
-    });
+    const net = await facemesh.load(facemesh.SupportedPackages.mediapipeFacemesh);
     setInterval(() => {
-      detect(net)
-    }, 100)
+      detect(net);
+    }, 10);
   };
     // Detect
   const detect = async (net) => {
-    if (typeof userVideo.current !== 'undefined'
-    && userVideo.current !== null
-    && userVideo.current.video.readyState === 4
+    if (
+      typeof userVideo.current !== "undefined" &&
+      userVideo.current !== null &&
+      userVideo.current.video.readyState === 4
     ) {
-     // Get Video Properties
-     const video1 = userVideo.current.video;
-     const videoWidth = userVideo.current.video.videoWidth;
-     const videoHeight = userVideo.current.video.videoHeight;
+      // Get Video Properties
+      const video = userVideo.current.video;
+      const videoWidth = userVideo.current.video.videoWidth;
+      const videoHeight = userVideo.current.video.videoHeight;
 
-     // Set video width
-     userVideo.current.video.width = videoWidth;
-     userVideo.current.video.height = videoHeight;
+      // Set video width
+      userVideo.current.video.width = videoWidth;
+      userVideo.current.video.height = videoHeight;
 
-     // Set canvas width
-     canvasRef.current.width = videoWidth;
-     canvasRef.current.height = videoHeight;
+      // Set canvas width
+      userVideo.current.width = videoWidth;
+      userVideo.current.height = videoHeight;
 
-      // make detections
-      const face = await net.estimateFaces(video1);
-      // console.log(face);
+      // Make Detections
+      // OLD MODEL
+      //       const face = await net.estimateFaces(video);
+      // NEW MODEL
+      const face = await net.estimateFaces({input:video});
+      console.log(face);
 
       // get canvas context for drawing
       const ctx = canvasRef.current.getContext('2d');
-      drawMesh(face, ctx);
+      requestAnimationFrame(()=>{drawMesh(face, ctx)});
     }
   };
 
-  // runFacemesh();
-
   useEffect(() => {
+    runFacemesh()
       // socketRef.current = io.connect("/");
       // socketRef.current = io('http://localhost:5000');
-      socketRef.current = io('https://eie4428-webcam-app.herokuapp.com/');
+      //socketRef.current = io('https://eie4428-webcam-app.herokuapp.com/');
       socketRef.current = io('http://localhost:5000');
       navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
           userVideo.current.srcObject = stream;
