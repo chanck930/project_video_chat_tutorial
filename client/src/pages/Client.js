@@ -156,7 +156,7 @@ const Client = () => {
     }
   };
 
-  runFacemesh();
+  // runFacemesh();
 
   useEffect(() => {
       // socketRef.current = io.connect("/");
