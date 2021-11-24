@@ -3,11 +3,11 @@ import { v1 as uuid } from "uuid";
 import styled from "styled-components";
 import Peer from "simple-peer";
 import * as tf from '@tensorflow/tfjs';
-import { Grid, Typography, Paper, makeStyles, Switch } from '@material-ui/core';
+import * as facemesh from '@tensorflow-models/facemesh';
+import { Grid, Typography, Paper, makeStyles } from '@material-ui/core';
 import Webcam from "react-webcam";
 import io from "socket.io-client";
 import { drawMesh } from '../components/utilities';
-import * as facemesh from "@tensorflow-models/face-landmarks-detection";
 
 
 // import BroadcastBar from '../components/BroadcastBar';
@@ -23,8 +23,8 @@ const useStyles = makeStyles((theme) => ({
     width: '100%',
   },
   video: {
-    width: '640px',
-    height: '480px',
+    width: '550px',
+    height: '413px',
     textAlign: "center",
     zindex: 9,
     [theme.breakpoints.down('xs')]: {
@@ -32,11 +32,11 @@ const useStyles = makeStyles((theme) => ({
     },
   },
     canvas: {
-      width: '640px',
-      height: '480px',
+      width: '550px',
+      height: '413px',
       textAlign: "center",
       position: 'relative',
-      top:'-530px',
+      top:'-460px',
       left:'40px',
       zindex: 11,
       [theme.breakpoints.down('xs')]: {
@@ -105,57 +105,62 @@ const Client = () => {
   const canvasRef = useRef();
   const [peers, setPeers] = useState([]);
   const socketRef = useRef();
-  const userVideo = useRef(null);
+  const userVideo = useRef();
   const peersRef = useRef([]);
   // const roomID = props.match.params.roomID;
   const roomID = '1234';
-  
+  const [isFace, isFaceThere] = useState([]);
+
   // Load facemesh
   const runFacemesh = async () => {
-    const net = await facemesh.load(facemesh.SupportedPackages.mediapipeFacemesh);
+    const net = await facemesh.load({
+      inputResolution: { width: '640px', height: '480px' }, scale: 0.8,
+    });
     setInterval(() => {
-      detect(net);
-    }, 10);
+      detect(net)
+    }, 100)
   };
     // Detect
   const detect = async (net) => {
-    if (
-      typeof userVideo.current !== "undefined" &&
-      userVideo.current !== null &&
-      userVideo.current.video.readyState === 4
+    if (typeof userVideo.current !== 'undefined'
+    && userVideo.current !== null
+    && userVideo.current.video.readyState === 4
     ) {
-      // Get Video Properties
-      const video = userVideo.current.video;
-      const videoWidth = userVideo.current.video.videoWidth;
-      const videoHeight = userVideo.current.video.videoHeight;
+     // Get Video Properties
+     const video1 = userVideo.current.video;
+     const videoWidth = userVideo.current.video.videoWidth;
+     const videoHeight = userVideo.current.video.videoHeight;
 
-      // Set video width
-      userVideo.current.video.width = videoWidth;
-      userVideo.current.video.height = videoHeight;
+     // Set video width
+     userVideo.current.video.width = videoWidth;
+     userVideo.current.video.height = videoHeight;
 
-      // Set canvas width
-      userVideo.current.width = videoWidth;
-      userVideo.current.height = videoHeight;
+     // Set canvas width
+     canvasRef.current.width = videoWidth;
+     canvasRef.current.height = videoHeight;
 
-      // Make Detections
-      // OLD MODEL
-      //       const face = await net.estimateFaces(video);
-      // NEW MODEL
-      const face = await net.estimateFaces({input:video});
-      console.log(face);
+      // make detections
+      const face = await net.estimateFaces(video1);
+      if(face.length == 0)
+        {
+          isFaceThere(false);
+        }
+      else{
+        isFaceThere(true)
+      }
 
       // get canvas context for drawing
       const ctx = canvasRef.current.getContext('2d');
-      requestAnimationFrame(()=>{drawMesh(face, ctx)});
+      drawMesh(face, ctx);
     }
   };
 
+  runFacemesh();
+
   useEffect(() => {
-    runFacemesh()
       // socketRef.current = io.connect("/");
-      // socketRef.current = io('http://localhost:5000');
-      //socketRef.current = io('https://eie4428-webcam-app.herokuapp.com/');
       socketRef.current = io('http://localhost:5000');
+      // socketRef.current = io('https://eie4428-webcam-app.herokuapp.com/');
       navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
           userVideo.current.srcObject = stream;
           socketRef.current.emit("server join room", roomID);
@@ -227,7 +232,7 @@ const Client = () => {
     <div className={classes.Container}>
       <Paper className={classes.paper}>
         <Grid item xs={12} md={6}>
-          <Typography variant="h5" gutterBottom>Your WebCam</Typography>
+          <Typography variant="h5" gutterBottom>{isFace.toString()}</Typography>
           <Webcam muted ref={userVideo} autoPlay playsInline className={classes.video}/> 
         </Grid>
       </Paper>

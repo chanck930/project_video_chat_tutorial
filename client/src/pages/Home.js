@@ -1,6 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import * as facemesh from "@tensorflow-models/face-landmarks-detection"
-import { drawMesh } from '../components/utilities';
 import { makeStyles } from '@material-ui/core/styles';
 import Peer from "simple-peer";
 import io from "socket.io-client";
@@ -14,48 +12,64 @@ import Webcam from "react-webcam";
 
 const useStyles = makeStyles((theme) => ({
     wrapper: {
-        display: 'flex',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      width: '100%',
+    },
+    video: {
+      width: '640px',
+      [theme.breakpoints.down('xs')]: {
+        width: '480px',
+      },
+    },
+    gridContainer: {
+      justifyContent: 'center',
+      [theme.breakpoints.down('xs')]: {
         flexDirection: 'column',
-        alignItems: 'center',
-        width: '100%',
       },
-      video: {
-        width: '640px',
-        height: '480px',
-        textAlign: "center",
-        zindex: 9,
-        [theme.breakpoints.down('xs')]: {
-          width: '480px',
-        },
-      },
-        canvas: {
-          width: '640px',
-          height: '480px',
-          textAlign: "center",
-          position: 'relative',
-          top:'-460px',
-          left:'40px',
-          zindex: 11,
-          [theme.breakpoints.down('xs')]: {
-            width: '550px',
-          },
-        },
-      gridContainer: {
-        justifyContent: 'center',
-        [theme.breakpoints.down('xs')]: {
-          flexDirection: 'column',
-        },
-      },
-      paper: {
-        padding: '10px',
-        border: '2px solid black',
-        margin: '30px',
-      },
-      container: {
-        display: 'inline-block',
-        position: 'relative',
-      },
+    },
+    paper: {
+      padding: '10px',
+      border: '2px solid black',
+      margin: '30px',
+    },
   }));
+
+const Container = styled.div`
+    padding: 20px;
+    display: flex;
+    height: 100vh;
+    width: 90%;
+    margin: auto;
+    flex-wrap: wrap;
+`;
+
+const StyledVideo = styled.video`
+    height: 100%;
+    width: 100%;
+`;
+
+const Video = (props) => {
+    const ref = useRef();
+
+    useEffect(() => {
+        props.peer.on("stream", stream => {
+            ref.current.srcObject = stream;
+            console.log("stream active: " + stream.active);
+        })
+    }, []);
+
+    return (
+        <video playsInline autoPlay ref={ref} height={videoConstraints.height} width={videoConstraints.width}/>
+        // <Webcam ref={ref} autoPlay playsInline videoConstraints={videoConstraints}/> 
+    );
+}
+
+const videoConstraints = {  // trying to follow broadcasting video size
+    height: 480,
+    width: 640
+};
 
 // function createEmptyVideoTrack({ width, height }) {
 //     const canvas = Object.assign(document.createElement('canvas'), { width, height });
@@ -73,74 +87,19 @@ const Home = () => {
     const [peers, setPeers] = useState([]);
     const [serverStatus, setServerStatus] = useState(false);
     const socketRef = useRef();
-    const userVideo = useRef(null);
+    const userVideo = useRef();
     const peersRef = useRef([]);
-    const ref = useRef(null);
-    const canvasRef = useRef();
     // const roomID = props.match.params.roomID;
     const roomID = '1234';
 
     // const videoTrack = createEmptyVideoTrack(videoConstraints)
     // const dummyStream = new MediaStream([videoTrack]);
-    const Video = (props) => {
-
-        useEffect(() => {
-            props.peer.on("stream", stream => {
-                ref.current.srcObject = stream;
-                console.log("stream active: " + stream.active);
-            })
-        }, []);
     
-        return (
-            <Webcam playsInline autoPlay ref={ref} width = '640px' height = '480px' className={classes.video}/>
-           // <Webcam playsInline autoPlay ref={ref} className={classes.video}/>
-        );
-    }
-
-     // Load facemesh
-  const runFacemesh = async () => {
-    const net = await facemesh.load(facemesh.SupportedPackages.mediapipeFacemesh);
-    setInterval(() => {
-      detect(net);
-    }, 10);
-  };
-    // Detect
-  const detect = async (net) => {
-    if (
-      typeof userVideo.current !== "undefined" &&
-      userVideo.current !== null &&
-      userVideo.current.video.readyState === 4
-    ) {
-      // Get Video Properties
-      const video = userVideo.current.video;
-      const videoWidth = userVideo.current.video.videoWidth;
-      const videoHeight = userVideo.current.video.videoHeight;
-
-      // Set video width
-      userVideo.current.video.width = videoWidth;
-      userVideo.current.video.height = videoHeight;
-
-      // Set canvas width
-      userVideo.current.width = videoWidth;
-      userVideo.current.height = videoHeight;
-
-      // Make Detections
-      // OLD MODEL
-      //       const face = await net.estimateFaces(video);
-      // NEW MODEL
-      const face = await net.estimateFaces({input:video});
-      console.log(face);
-
-      // get canvas context for drawing
-      const ctx = canvasRef.current.getContext('2d');
-      requestAnimationFrame(()=>{drawMesh(face, ctx)});
-    }
-  };
 
   useEffect(() => {
-    //runFacemesh()
     // socketRef.current = io.connect("/");
     socketRef.current = io('http://localhost:5000');
+    // socketRef.current = io('https://eie4428-webcam-app.herokuapp.com/');
     navigator.mediaDevices.getUserMedia({ video: true, audio: false }).then((stream) => {
         // stream = dummyStream;
         // console.log(stream);
@@ -262,7 +221,6 @@ const Home = () => {
             }
         </Grid>
     </Paper>
-    <canvas ref={canvasRef} className={classes.canvas} />
     </div>
     </Grid>
   );
