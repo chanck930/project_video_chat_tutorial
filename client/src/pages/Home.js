@@ -141,8 +141,6 @@ const Home = () => {
     //runFacemesh()
     // socketRef.current = io.connect("/");
     socketRef.current = io('http://localhost:5000');
-    //socketRef.current = io('https://eie4428-webcam-app.herokuapp.com/');
-    socketRef.current = io('http://localhost:5000');
     navigator.mediaDevices.getUserMedia({ video: true, audio: false }).then((stream) => {
         // stream = dummyStream;
         // console.log(stream);
