@@ -4,7 +4,7 @@ import styled from "styled-components";
 import Peer from "simple-peer";
 import * as tf from '@tensorflow/tfjs';
 import * as facemesh from '@tensorflow-models/facemesh';
-import { Grid, Typography, Paper, makeStyles } from '@material-ui/core';
+import { Grid, Typography, Paper, makeStyles, Switch } from '@material-ui/core';
 import Webcam from "react-webcam";
 import io from "socket.io-client";
 import { drawMesh } from '../components/utilities';
@@ -23,8 +23,8 @@ const useStyles = makeStyles((theme) => ({
     width: '100%',
   },
   video: {
-    width: '550px',
-    height: '413px',
+    width: '640px',
+    height: '480px',
     textAlign: "center",
     zindex: 9,
     [theme.breakpoints.down('xs')]: {
@@ -32,11 +32,11 @@ const useStyles = makeStyles((theme) => ({
     },
   },
     canvas: {
-      width: '550px',
-      height: '413px',
+      width: '640px',
+      height: '480px',
       textAlign: "center",
       position: 'relative',
-      top:'-460px',
+      top:'-530px',
       left:'40px',
       zindex: 11,
       [theme.breakpoints.down('xs')]: {
@@ -110,6 +110,14 @@ const Client = () => {
   // const roomID = props.match.params.roomID;
   const roomID = '1234';
 
+  const ToggleButtonOnOff = () => {
+    const [isOff, setIsOff] = useState(true);
+  
+    return (
+      <button onClick={() => setIsOff(!isOff)}>{ isOff ? 'ON' : 'OFF' }</button>
+    );
+  };
+  
   // Load facemesh
   const runFacemesh = async () => {
     const net = await facemesh.load({
