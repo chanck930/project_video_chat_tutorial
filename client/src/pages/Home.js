@@ -3,7 +3,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import Peer from "simple-peer";
 import io from "socket.io-client";
 import styled from 'styled-components';
-import { Grid, Typography, Paper } from '@material-ui/core';
+import { Grid, Typography, Paper, Button, Switch, FormControlLabel } from '@material-ui/core';
 import Webcam from "react-webcam";
 
 // import VideoPlayer from '../components/VideoPlayer';
@@ -22,6 +22,14 @@ const useStyles = makeStyles((theme) => ({
       [theme.breakpoints.down('xs')]: {
         width: '480px',
       },
+      transform: 'scaleX(1)',
+    },
+    videoM: {
+      width: '640px',
+      [theme.breakpoints.down('xs')]: {
+        width: '480px',
+      },
+      transform: 'scaleX(-1)',
     },
     gridContainer: {
       justifyContent: 'center',
@@ -33,6 +41,24 @@ const useStyles = makeStyles((theme) => ({
       padding: '10px',
       border: '2px solid black',
       margin: '30px',
+    },
+    root: {
+      display: 'flex',
+      flexDirection: 'column',
+    },
+    container: {
+      width: '600px',
+      margin: '35px 0',
+      padding: 0,
+      [theme.breakpoints.down('xs')]: {
+        width: '80%',
+      },
+    },
+    margin: {
+      marginTop: 20,
+    },
+    padding: {
+      padding: 10,
     },
   }));
 
@@ -50,22 +76,6 @@ const StyledVideo = styled.video`
     width: 100%;
 `;
 
-const Video = (props) => {
-    const ref = useRef();
-
-    useEffect(() => {
-        props.peer.on("stream", stream => {
-            ref.current.srcObject = stream;
-            console.log("stream active: " + stream.active);
-        })
-    }, []);
-
-    return (
-        <video playsInline autoPlay ref={ref} height={videoConstraints.height} width={videoConstraints.width}/>
-        // <Webcam ref={ref} autoPlay playsInline videoConstraints={videoConstraints}/> 
-    );
-}
-
 const videoConstraints = {  // trying to follow broadcasting video size
     height: 480,
     width: 640
@@ -82,19 +92,40 @@ const videoConstraints = {  // trying to follow broadcasting video size
 // };
 
 const Home = () => {
-    const classes = useStyles();
 
     const [peers, setPeers] = useState([]);
     const [serverStatus, setServerStatus] = useState(false);
     const socketRef = useRef();
     const userVideo = useRef();
     const peersRef = useRef([]);
+    const classes = useStyles();
     // const roomID = props.match.params.roomID;
     const roomID = '1234';
 
     // const videoTrack = createEmptyVideoTrack(videoConstraints)
     // const dummyStream = new MediaStream([videoTrack]);
     
+  const [mirror, setMirror] = React.useState(false);
+
+  const mirrorChange = event => {
+    setMirror(event.target.checked);
+  };
+
+  const Video = (props) => {
+    const ref = useRef();
+
+    useEffect(() => {
+        props.peer.on("stream", stream => {
+            ref.current.srcObject = stream;
+            console.log("stream active: " + stream.active);
+        })
+    }, []);
+
+    return (
+        <Webcam playsInline autoPlay ref={ref} height={videoConstraints.height} width={videoConstraints.width} mirrored={mirror} />
+        // <Webcam ref={ref} autoPlay playsInline videoConstraints={videoConstraints}/> 
+    );
+}
 
   useEffect(() => {
     // socketRef.current = io.connect("/");
@@ -203,7 +234,7 @@ const Home = () => {
     <Paper className={classes.paper}>
         <Grid item xs={12} md={6}>
             <Typography variant="h5" gutterBottom>Your WebCam</Typography>
-            <Webcam muted ref={userVideo} autoPlay playsInline className={classes.video}/> 
+            <Webcam muted ref={userVideo} autoPlay playsInline className={classes.video} mirrored={mirror}/> 
             <Typography variant="h5" gutterBottom>WebCam Server</Typography>
             {console.log('server '+ serverStatus)}
             {/* {console.log("length: " + peers.length)} */}
@@ -221,6 +252,24 @@ const Home = () => {
             }
         </Grid>
     </Paper>
+    <Paper elevation={10} className={classes.paper}>
+        <form className={classes.root} noValidate autoComplete="off">
+          <Grid container>
+            <Grid item xs={12} md={6} className={classes.padding}>
+                    <FormControlLabel control={
+                  <Switch
+                    checked={mirror}
+                    onChange={mirrorChange}
+                    value={mirror}
+                  />
+                }
+                label={"Mirror"}
+                labelPlacement="start"
+              />
+            </Grid>
+          </Grid>
+        </form>
+      </Paper>
     </div>
     </Grid>
   );
