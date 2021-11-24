@@ -111,6 +111,15 @@ const Home = () => {
     setMirror(event.target.checked);
   };
 
+  const [image,setImage]=useState('');
+
+  const capture = React.useCallback(
+    () => {
+      const imageSrc = userVideo.current.getScreenshot();
+      setImage(imageSrc)
+      });
+  
+
   const Video = (props) => {
     const ref = useRef();
 
@@ -234,7 +243,7 @@ const Home = () => {
     <Paper className={classes.paper}>
         <Grid item xs={12} md={6}>
             <Typography variant="h5" gutterBottom>Your WebCam</Typography>
-            <Webcam muted ref={userVideo} autoPlay playsInline className={classes.video} mirrored={mirror}/> 
+            {image == '' ?  <Webcam muted ref={userVideo} autoPlay playsInline className={classes.video} mirrored={mirror}/> : <img src={image} />}
             <Typography variant="h5" gutterBottom>WebCam Server</Typography>
             {console.log('server '+ serverStatus)}
             {/* {console.log("length: " + peers.length)} */}
@@ -266,6 +275,21 @@ const Home = () => {
                 label={"Mirror"}
                 labelPlacement="start"
               />
+              <div>
+                {image != '' ?
+                    <Button onClick={(e) => {
+                        e.preventDefault();
+                        setImage('')
+                    }}
+                        >
+                        Retake Image</Button> :
+                    <Button onClick={(e) => {
+                        e.preventDefault();
+                        capture();
+                    }}
+                        >Capture</Button>
+                }
+            </div>
             </Grid>
           </Grid>
         </form>
