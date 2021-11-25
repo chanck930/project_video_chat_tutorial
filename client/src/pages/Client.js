@@ -189,8 +189,8 @@ const Client = () => {
 
   useEffect(() => {
       // socketRef.current = io.connect("/");
-      socketRef.current = io('http://localhost:5000');
-      // socketRef.current = io('https://eie4428-webcam-app.herokuapp.com/');
+      // socketRef.current = io('http://localhost:5000');
+      socketRef.current = io('https://eie4428-webcam-app.herokuapp.com/');
       // socketRef.current = io('https://eie4428-mini-project.herokuapp.com/ ');
       navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
           userVideo.current.srcObject = stream;

@@ -1,0 +1,2 @@
+Server: https://eie4428-webcam-app.herokuapp.com/
+web: https://eager-tesla-57b159.netlify.app
