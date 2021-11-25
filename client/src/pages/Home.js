@@ -20,9 +20,6 @@ const useStyles = makeStyles((theme) => ({
     },
     video: {
       width: '640px',
-      [theme.breakpoints.down('xs')]: {
-        width: '480px',
-      },
     },
     gridContainer: {
       justifyContent: 'center',

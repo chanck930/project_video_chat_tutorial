@@ -27,16 +27,10 @@ const useStyles = makeStyles((theme) => ({
   },
   video: {
     width: '640px',
-    [theme.breakpoints.down('xs')]: {
-      width: '480px',
-    },
-    transform: 'scaleX(1)',
+    height: '480px',
   },
   gridContainer: {
     justifyContent: 'center',
-    [theme.breakpoints.down('xs')]: {
-      flexDirection: 'column',
-    },
   },
   paper: {
     padding: '10px',
@@ -51,9 +45,6 @@ const useStyles = makeStyles((theme) => ({
     width: '600px',
     margin: '35px 0',
     padding: 0,
-    [theme.breakpoints.down('xs')]: {
-      width: '80%',
-    },
   },
   margin: {
     marginTop: 20,
@@ -68,16 +59,13 @@ const useStyles = makeStyles((theme) => ({
     size: '300px'
   },
   canvas: {
-    width: '550px',
-    height: '413px',
+    width: '640px',
+    height: '480px',
     textAlign: "center",
     position: 'relative',
-    top:'-700px',
-    left:'95px',
+    top:'-745px',
+    left:'40px',
     zindex: 11,
-    [theme.breakpoints.down('xs')]: {
-      width: '550px',
-    },
   },
 
   write:{
