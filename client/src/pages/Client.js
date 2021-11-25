@@ -4,10 +4,11 @@ import styled from "styled-components";
 import Peer from "simple-peer";
 import * as tf from '@tensorflow/tfjs';
 import * as facemesh from '@tensorflow-models/facemesh';
-import { Grid, Typography, Paper, makeStyles } from '@material-ui/core';
 import Webcam from "react-webcam";
 import io from "socket.io-client";
 import { drawMesh } from '../components/utilities';
+import { Grid, Typography, Paper, Button, makeStyles } from '@material-ui/core';
+import CameraAltIcon from '@mui/icons-material/CameraAlt';
 
 
 // import BroadcastBar from '../components/BroadcastBar';
@@ -23,26 +24,12 @@ const useStyles = makeStyles((theme) => ({
     width: '100%',
   },
   video: {
-    width: '550px',
-    height: '413px',
-    textAlign: "center",
-    zindex: 9,
+    width: '640px',
     [theme.breakpoints.down('xs')]: {
       width: '480px',
     },
+    transform: 'scaleX(1)',
   },
-    canvas: {
-      width: '550px',
-      height: '413px',
-      textAlign: "center",
-      position: 'relative',
-      top:'-460px',
-      left:'40px',
-      zindex: 11,
-      [theme.breakpoints.down('xs')]: {
-        width: '550px',
-      },
-    },
   gridContainer: {
     justifyContent: 'center',
     [theme.breakpoints.down('xs')]: {
@@ -54,10 +41,48 @@ const useStyles = makeStyles((theme) => ({
     border: '2px solid black',
     margin: '30px',
   },
-  container: {
-    display: 'inline-block',
-    position: 'relative',
+  root: {
+    display: 'flex',
+    flexDirection: 'column',
   },
+  container: {
+    width: '600px',
+    margin: '35px 0',
+    padding: 0,
+    [theme.breakpoints.down('xs')]: {
+      width: '80%',
+    },
+  },
+  margin: {
+    marginTop: 20,
+  },
+  padding: {
+    padding: 10,
+  },
+  button: {
+    width: '300px'
+  },
+  switch: {
+    size: '300px'
+  },
+  canvas: {
+    width: '550px',
+    height: '413px',
+    textAlign: "center",
+    position: 'relative',
+    top:'-700px',
+    left:'95px',
+    zindex: 11,
+    [theme.breakpoints.down('xs')]: {
+      width: '550px',
+    },
+  },
+
+  write:{
+    position: 'relative',
+    top: '-54px',
+    left: '320px',
+  }
 }));
 
 /* const Container = styled.div`
@@ -111,6 +136,31 @@ const Client = () => {
   const roomID = '1234';
   const [isFace, isFaceThere] = useState([]);
 
+  const [mirror, setMirror] = React.useState(false);
+
+  const mirrorChangeT = event => {
+    setMirror(true);
+  };
+
+  const mirrorChangeF = event => {
+    setMirror(false);
+  };
+
+  const capture = React.useCallback(
+    () => {
+      if (typeof userVideo.current !== 'undefined'
+        && userVideo.current !== null
+        && userVideo.current.video.readyState === 4
+        ){
+      const imageSrc = userVideo.current.getScreenshot();
+      setImage(imageSrc)}
+      else{
+        alert('error');
+      }
+      });
+
+  const [image,setImage]=useState('');
+
   // Load facemesh
   const runFacemesh = async () => {
     const net = await facemesh.load({
@@ -155,7 +205,6 @@ const Client = () => {
     }
   };
 
-  //runFacemesh();
 
   useEffect(() => {
       // socketRef.current = io.connect("/");
@@ -234,9 +283,55 @@ const Client = () => {
       <Paper className={classes.paper}>
         <Grid item xs={12} md={6}>
           <Typography variant="h5" gutterBottom>Your Camera</Typography>
-          <Webcam muted ref={userVideo} autoPlay playsInline className={classes.video}/> 
+          {image == '' ?  <Webcam muted ref={userVideo} autoPlay playsInline className={classes.video} mirrored={mirror}/> : <img src={image} />}
         </Grid>
       </Paper>
+      <Paper elevation={10} className={classes.paper}>
+          <Grid container>
+            <Grid item xs={12} md={6} className={classes.padding}>
+              {mirror != true ?
+                    <Button variant="contained" color="primary" className={classes.button} fullWidth startIcon={<CameraAltIcon fontSize="large" />} onClick={(e) => {
+                        e.preventDefault();
+                        mirrorChangeT();
+                    }}
+                        >
+                        Mirror Video</Button> :
+                    <Button variant="contained" color="primary" className={classes.button} fullWidth startIcon={<CameraAltIcon fontSize="large" /> }onClick={(e) => {
+                        e.preventDefault();
+                        mirrorChangeF();
+                    }}
+                        >Mirror Video</Button>
+                }
+              </Grid>
+              <div>
+              <Grid item xs={12} md={6} className={classes.padding}>
+                {image != '' ?
+                    <Button variant="contained" color="secondary" className={classes.button} fullWidth startIcon={<CameraAltIcon fontSize="large" />} onClick={(e) => {
+                        e.preventDefault();
+                        setImage('')
+                    }}
+                        >
+                        Retake Image</Button> :
+                    <Button variant="contained" color="primary" className={classes.button} fullWidth startIcon={<CameraAltIcon fontSize="large" /> }onClick={(e) => {
+                        e.preventDefault();
+                        capture();
+                    }}
+                        >Capture</Button>
+                }
+                </Grid>
+            </div>
+            </Grid>
+            <Grid item xs={12} md={6} className={classes.padding}>
+            <Button variant="contained" color="primary" className={classes.button} fullWidth startIcon={<CameraAltIcon fontSize="large" /> }onClick={(e) => {
+                        e.preventDefault();
+                        runFacemesh();
+                    }}
+                        >Run Face Mesh</Button>
+            </Grid>
+            <Grid item xs={12} md={6} className={classes.padding}>
+            <Typography variant="h6" className={classes.write} > Face detected: {isFace.toString()}</Typography>
+          </Grid>
+     </Paper>
       <canvas ref={canvasRef} className={classes.canvas} />
     </div>
     </Grid>
