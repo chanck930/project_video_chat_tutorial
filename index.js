@@ -77,8 +77,12 @@ io.on('connection', socket => {
         }
         if (serverUser == socket.id) {
             console.log('server disconnect ' + socket.id);
-            socket.emit("server disconnect", serverUser);
+            socket.broadcast.emit("server disconnect", serverUser);
             serverUser = null;
+        }
+        else {
+            console.log('user disconnect ' + socket.id);
+            socket.broadcast.emit("user disconnect", socket.id);
         }
     });
 

@@ -84,15 +84,15 @@ const videoConstraints = {  // trying to follow broadcasting video size
     width: 640
 };
 
-// function createEmptyVideoTrack({ width, height }) {
-//     const canvas = Object.assign(document.createElement('canvas'), { width, height });
-//     canvas.getContext('2d').fillRect(0, 0, width, height);
+function createEmptyVideoTrack({ width, height }) {
+    const canvas = Object.assign(document.createElement('canvas'), { width, height });
+    canvas.getContext('2d').fillRect(0, 0, width, height);
 
-//     const stream = canvas.captureStream();
-//     const track = stream.getVideoTracks()[0];
+    const stream = canvas.captureStream();
+    const track = stream.getVideoTracks()[0];
 
-//     return Object.assign(track, { enabled: false });
-// };
+    return Object.assign(track, { enabled: false });
+};
 
 const Home = () => {
 
@@ -106,8 +106,8 @@ const Home = () => {
     // const roomID = props.match.params.roomID;
     const roomID = '1234';
 
-    // const videoTrack = createEmptyVideoTrack(videoConstraints)
-    // const dummyStream = new MediaStream([videoTrack]);
+    const videoTrack = createEmptyVideoTrack(videoConstraints)
+    const dummyStream = new MediaStream([videoTrack]);
 
   const Video = (props) => {
 
@@ -120,7 +120,6 @@ const Home = () => {
 
     return (
         <video playsInline autoPlay ref={ref} height={videoConstraints.height} width={videoConstraints.width} />
-        // <Webcam ref={ref} autoPlay playsInline videoConstraints={videoConstraints}/> 
     );
   }
 
@@ -131,9 +130,6 @@ const Home = () => {
     // socketRef.current = io('https://eie4428-mini-project.herokuapp.com/ ');
     
     navigator.mediaDevices.getUserMedia({ video: true, audio: false }).then((stream) => {
-        // stream = dummyStream;
-        // console.log(stream);
-        // console.log(dummyStream);
         
         userVideo.current.srcObject = stream;
         socketRef.current.emit("client join room", roomID);
@@ -141,50 +137,51 @@ const Home = () => {
             console.log("on server users");
             console.log("server user: " + user);
             if (user != null) {
-                setServerStatus(true);
-                
                 const peers = [];
-                const peer = createPeer(user, socketRef.current.id, stream);
+                const peer = createPeer(user, socketRef.current.id);
                 peersRef.current.push({
                     peerID: user,
                     peer,
                 })
                 peers.push(peer);
                 setPeers(peers);
+
+                setServerStatus(true);
             }
         })
 
         socketRef.current.on("user joined", payload => {
             console.log("on user joined");
-            const peer = addPeer(payload.signal, payload.callerID, stream);
-            peersRef.current.push({
-                peerID: payload.callerID,
-                peer,
-            })
+            const peer = addPeer(payload.signal, payload.callerID);
 
-            setPeers(users => [...users, peer]);
+            setPeers([peer]);
             setServerStatus(true);
         });
 
         socketRef.current.on("receiving returned signal", payload => {
-            console.log("on receiving returned signal " + payload.id);
-            const item = peersRef.current.find(p => p.peerID === payload.id);
-            item.peer.signal(payload.signal);
-        });
+          console.log("on receiving returned signal " + payload.id);
+          const item = peersRef.current.find(p => p.peerID === payload.id);
+          item.peer.signal(payload.signal);
+      });
 
-        // socketRef.current.on("server disconnect", () => {
-        //     console.log("server disconnected");
-        //     setServerStatus(false);
-        // });
+        socketRef.current.on("server disconnect", payload => {
+          console.log("server disconnected");
+          setServerStatus(false);
+          const tempPeer = peersRef.current.find(p => p.peerID === payload.id);
+          if (tempPeer) {
+              tempPeer.peer.destory();
+          }
+          setPeers([]);
+        });
 
     }, (error) => console.error(error))
 }, []);
 
-  function createPeer(userToSignal, callerID, stream) {
+  function createPeer(userToSignal, callerID) {
       const peer = new Peer({
           initiator: true,
           trickle: false,
-          stream,
+          stream: dummyStream,
       });
 
       peer.on("signal", signal => {
@@ -194,11 +191,11 @@ const Home = () => {
       return peer;
   }
 
-  function addPeer(incomingSignal, callerID, stream) {
+  function addPeer(incomingSignal, callerID) {
       const peer = new Peer({
           initiator: false,
           trickle: false,
-          stream,
+          stream: dummyStream,
       })
 
       peer.on("signal", signal => {
@@ -211,23 +208,6 @@ const Home = () => {
   }
 
   return (
-    //   <Paper className={classes.paper}>
-    //     <Grid item xs={12} md={6}>
-    //   <div className={classes.Container}>
-    //         <Typography variant="h5" gutterBottom>Your WebCam</Typography>
-    //         <Webcam muted ref={userVideo} autoPlay playsInline className={classes.video}/> 
-    //         <Typography variant="h5" gutterBottom>WebCam Server</Typography>
-    //             {/* {peers.map((peer, index) => {
-    //                 if (index === 0) {
-    //                     return (
-    //                         <Video key={index} peer={peer} className={classes.video}/>
-    //                     )
-    //                 }
-    //             })} */}
-    // </div>
-    //     </Grid>
-    // </Paper>
-
     <Grid container className={classes.gridContainer}>
     <div className={classes.Container}>
     <Paper className={classes.paper}>
@@ -236,18 +216,13 @@ const Home = () => {
             <Webcam muted ref={userVideo} autoPlay playsInline className={classes.video}/>
             <Typography variant="h5" gutterBottom>WebCam Server</Typography>
             {console.log('server '+ serverStatus)}
-            {/* {console.log("length: " + peers.length)} */}
+            {console.log("length: " + peers.length)}
             {serverStatus ? 
-                (peers.map((peer, index) => {
-                    if (index === peers.length - 1) {
-                        return (
-                            <Video key={index} peer={peer} className={classes.video}/>
-                        )
-                    }
-                })) :
-                    <Paper className={classes.paper}>
-                        <Typography variant="h5" gutterBottom>Server Offline</Typography>
-                    </Paper>
+                <Video peer={peers.at(-1)} className={classes.video}/>
+                 :
+                <Paper className={classes.paper}>
+                    <Typography variant="h5" gutterBottom>Server Offline</Typography>
+                </Paper>
             }
         </Grid>
     </Paper>

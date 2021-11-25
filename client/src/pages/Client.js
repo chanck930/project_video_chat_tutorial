@@ -75,15 +75,6 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-/* const Container = styled.div`
-    padding: 20px;
-    display: flex;
-    height: 100vh;
-    width: 90%;
-    margin: auto;
-    flex-wrap: wrap;
-`;*/
-
 const Video = (props) => {
     const classes = useStyles();
     const ref = useRef();
@@ -158,7 +149,7 @@ const Client = () => {
     });
     setInterval(() => {
       detect(net)
-    }, 100)
+    }, 1000)
   };
     // Detect
   const detect = async (net) => {
@@ -233,6 +224,16 @@ const Client = () => {
               console.log("on receiving returned signal");
               const item = peersRef.current.find(p => p.peerID === payload.id);
               item.peer.signal(payload.signal);
+          });
+
+          socketRef.current.on("user disconnect", payload => {
+            console.log("user disconnected");
+            const tempPeer = peersRef.current.find(p => p.peerID === payload.id);
+            if (tempPeer) {
+                tempPeer.peer.destory();
+            }
+            const peers = peersRef.current.filter(p => p.peerID !== payload.id);
+            peersRef.current = peers;
           });
       })
   }, []);
