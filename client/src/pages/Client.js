@@ -80,7 +80,7 @@ const Video = (props) => {
     }, []);
 
     return (
-        <Webcam playsInline autoPlay ref={ref} className={classes.video}/>
+        <video playsInline autoPlay ref={ref} className={classes.video}/>
     );
 }
 

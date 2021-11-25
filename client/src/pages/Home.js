@@ -89,6 +89,7 @@ const useStyles = makeStyles((theme) => ({
       left: '320px',
     }
   }));
+  
 
 const Container = styled.div`
     padding: 20px;
@@ -148,14 +149,13 @@ const Home = () => {
     () => {
       if (typeof ref.current !== 'undefined'
         && ref.current !== null
-        && ref.current.video.readyState === 4
         ){
       const imageSrc = ref.current.getScreenshot();
       setImage(imageSrc)}
       else{
         alert('error');
       }
-      });
+      },[ref]);
 
   const [image,setImage]=useState('');
 
@@ -169,7 +169,7 @@ const Home = () => {
     }, []);
 
     return (
-        <Webcam playsInline autoPlay ref={ref} height={videoConstraints.height} width={videoConstraints.width} mirrored={mirror} />
+        <video playsInline autoPlay ref={ref} height={videoConstraints.height} width={videoConstraints.width} />
         // <Webcam ref={ref} autoPlay playsInline videoConstraints={videoConstraints}/> 
     );
   }
@@ -187,18 +187,17 @@ const Home = () => {
   };
     // Detect
   const detect = async (net) => {
-    if (typeof ref.current !== 'undefined'
-    && ref.current !== null
-    && ref.current.video.readyState === 4
+    if (typeof userVideo.current !== 'undefined'
+    && userVideo.current !== null
     ) {
      // Get Video Properties
-     const video1 = ref.current.video;
-     const videoWidth = ref.current.video.videoWidth;
-     const videoHeight = ref.current.video.videoHeight;
+     const video1 = userVideo.current.video;
+     const videoWidth = '640px';
+     const videoHeight = '640px';
 
      // Set video width
-     ref.current.video.width = videoWidth;
-     ref.current.video.height = videoHeight;
+     userVideo.current.video.width = videoWidth;
+     userVideo.current.video.height = videoHeight;
 
      // Set canvas width
      canvasRef.current.width = videoWidth;
@@ -329,7 +328,7 @@ const Home = () => {
     <Paper className={classes.paper}>
         <Grid item xs={12} md={6}>
             <Typography variant="h5" gutterBottom>Your WebCam</Typography>
-            {image == '' ?  <Webcam muted ref={userVideo} autoPlay playsInline className={classes.video} mirrored={mirror}/> : <img src={image} />}
+            {image == '' ?  <video muted ref={userVideo} autoPlay playsInline className={classes.video}/> : <img src={image} />}
             <Typography variant="h5" gutterBottom>WebCam Server</Typography>
             {console.log('server '+ serverStatus)}
             {/* {console.log("length: " + peers.length)} */}
@@ -350,14 +349,14 @@ const Home = () => {
     <Paper elevation={10} className={classes.paper}>
           <Grid container>
             <Grid item xs={12} md={6} className={classes.padding}>
-              {mirror != true ?
+              {mirror !== true ?
                     <Button variant="contained" color="primary" className={classes.button} fullWidth startIcon={<CameraAltIcon fontSize="large" />} onClick={(e) => {
                         e.preventDefault();
                         mirrorChangeT();
                     }}
                         >
                         Mirror Video</Button> :
-                    <Button variant="contained" color="primary" className={classes.button} fullWidth startIcon={<CameraAltIcon fontSize="large" /> }onClick={(e) => {
+                    <Button variant="contained" color="secondary" className={classes.button} fullWidth startIcon={<CameraAltIcon fontSize="large" /> }onClick={(e) => {
                         e.preventDefault();
                         mirrorChangeF();
                     }}
@@ -366,7 +365,7 @@ const Home = () => {
               </Grid>
               <div>
               <Grid item xs={12} md={6} className={classes.padding}>
-                {image != '' ?
+                {image !== '' ?
                     <Button variant="contained" color="secondary" className={classes.button} fullWidth startIcon={<CameraAltIcon fontSize="large" />} onClick={(e) => {
                         e.preventDefault();
                         setImage('')
@@ -393,7 +392,7 @@ const Home = () => {
             <Typography variant="h6" className={classes.write} > Face detected: {isFace.toString()}</Typography>
           </Grid>
      </Paper>
-      <canvas ref={canvasRef} className={classes.canvas} />
+      <canvas ref={canvasRef} className={classes.canvas}  />
     </div>
     </Grid>
   );
