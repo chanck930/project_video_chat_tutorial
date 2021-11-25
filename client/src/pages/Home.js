@@ -69,24 +69,6 @@ const useStyles = makeStyles((theme) => ({
     },
     switch: {
       size: '300px'
-    },
-    canvas: {
-      width: '550px',
-      height: '413px',
-      textAlign: "center",
-      position: 'relative',
-      top:'-700px',
-      left:'95px',
-      zindex: 11,
-      [theme.breakpoints.down('xs')]: {
-        width: '550px',
-      },
-    },
-
-    write:{
-      position: 'relative',
-      top: '-54px',
-      left: '320px',
     }
   }));
   
@@ -172,6 +154,7 @@ const Home = () => {
         <video playsInline autoPlay ref={ref} height={videoConstraints.height} width={videoConstraints.width} />
         // <Webcam ref={ref} autoPlay playsInline videoConstraints={videoConstraints}/> 
     );
+<<<<<<< HEAD
   }
 
   const canvasRef = useRef();
@@ -218,6 +201,9 @@ const Home = () => {
       drawMesh(face, ctx);
     }
   };
+=======
+}
+>>>>>>> parent of 0339e40 (face Detect in home)
 
   useEffect(() => {
     // socketRef.current = io.connect("/");
@@ -381,6 +367,7 @@ const Home = () => {
                 </Grid>
             </div>
             </Grid>
+<<<<<<< HEAD
             <Grid item xs={12} md={6} className={classes.padding}>
             <Button variant="contained" color="primary" className={classes.button} fullWidth startIcon={<CameraAltIcon fontSize="large" /> }onClick={(e) => {
                         e.preventDefault();
@@ -393,6 +380,9 @@ const Home = () => {
           </Grid>
      </Paper>
       <canvas ref={canvasRef} className={classes.canvas}  />
+=======
+      </Paper>
+>>>>>>> parent of 0339e40 (face Detect in home)
     </div>
     </Grid>
   );
