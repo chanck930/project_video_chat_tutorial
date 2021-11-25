@@ -8,6 +8,7 @@ import Webcam from "react-webcam";
 import { drawMesh } from '../components/utilities';
 import * as tf from '@tensorflow/tfjs';
 import * as facemesh from '@tensorflow-models/facemesh';
+import CameraAltIcon from '@mui/icons-material/CameraAlt';
 
 // import VideoPlayer from '../components/VideoPlayer';
 // import Sidebar1 from '../components/Sidebar1';
@@ -63,6 +64,12 @@ const useStyles = makeStyles((theme) => ({
     padding: {
       padding: 10,
     },
+    button: {
+      width: '300px'
+    },
+    switch: {
+      size: '300px'
+    }
   }));
 
 const Container = styled.div`
@@ -111,11 +118,13 @@ const Home = () => {
     
   const [mirror, setMirror] = React.useState(false);
 
-  const mirrorChange = event => {
-    setMirror(event.target.checked);
+  const mirrorChangeT = event => {
+    setMirror(true);
   };
 
-  const [image,setImage]=useState('');
+  const mirrorChangeF = event => {
+    setMirror(false);
+  };
 
   const capture = React.useCallback(
     () => {
@@ -129,7 +138,8 @@ const Home = () => {
         alert('error');
       }
       });
-  
+
+  const [image,setImage]=useState('');
 
   const Video = (props) => {
 
@@ -141,7 +151,7 @@ const Home = () => {
     }, []);
 
     return (
-        <video playsInline autoPlay ref={ref} height={videoConstraints.height} width={videoConstraints.width} mirrored={mirror} />
+        <Webcam playsInline autoPlay ref={ref} height={videoConstraints.height} width={videoConstraints.width} mirrored={mirror} />
         // <Webcam ref={ref} autoPlay playsInline videoConstraints={videoConstraints}/> 
     );
 }
@@ -274,37 +284,40 @@ const Home = () => {
         </Grid>
     </Paper>
     <Paper elevation={10} className={classes.paper}>
-        <form className={classes.root} noValidate autoComplete="off">
           <Grid container>
             <Grid item xs={12} md={6} className={classes.padding}>
-                    <FormControlLabel control={
-                  <Switch
-                    checked={mirror}
-                    onChange={mirrorChange}
-                    value={mirror}
-                  />
+              {mirror != true ?
+                    <Button variant="contained" color="primary" className={classes.button} fullWidth startIcon={<CameraAltIcon fontSize="large" />} onClick={(e) => {
+                        e.preventDefault();
+                        mirrorChangeT();
+                    }}
+                        >
+                        Mirror Video</Button> :
+                    <Button variant="contained" color="primary" className={classes.button} fullWidth startIcon={<CameraAltIcon fontSize="large" /> }onClick={(e) => {
+                        e.preventDefault();
+                        mirrorChangeF();
+                    }}
+                        >Mirror Video</Button>
                 }
-                label={"Mirror"}
-                labelPlacement="start"
-              />
+              </Grid>
               <div>
+              <Grid item xs={12} md={6} className={classes.padding}>
                 {image != '' ?
-                    <Button onClick={(e) => {
+                    <Button variant="contained" color="secondary" className={classes.button} fullWidth startIcon={<CameraAltIcon fontSize="large" />} onClick={(e) => {
                         e.preventDefault();
                         setImage('')
                     }}
                         >
                         Retake Image</Button> :
-                    <Button onClick={(e) => {
+                    <Button variant="contained" color="primary" className={classes.button} fullWidth startIcon={<CameraAltIcon fontSize="large" /> }onClick={(e) => {
                         e.preventDefault();
                         capture();
                     }}
                         >Capture</Button>
                 }
+                </Grid>
             </div>
             </Grid>
-          </Grid>
-        </form>
       </Paper>
     </div>
     </Grid>
