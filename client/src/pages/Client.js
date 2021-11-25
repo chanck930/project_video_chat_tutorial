@@ -9,6 +9,8 @@ import io from "socket.io-client";
 import { drawMesh } from '../components/utilities';
 import { Grid, Typography, Paper, Button, makeStyles } from '@material-ui/core';
 import CameraAltIcon from '@mui/icons-material/CameraAlt';
+import FlipIcon from '@mui/icons-material/Flip';
+import FaceRetouchingNaturalIcon from '@mui/icons-material/FaceRetouchingNatural';
 
 
 // import BroadcastBar from '../components/BroadcastBar';
@@ -290,13 +292,13 @@ const Client = () => {
           <Grid container>
             <Grid item xs={12} md={6} className={classes.padding}>
               {mirror != true ?
-                    <Button variant="contained" color="primary" className={classes.button} fullWidth startIcon={<CameraAltIcon fontSize="large" />} onClick={(e) => {
+                    <Button variant="contained" color="primary" className={classes.button} fullWidth startIcon={<FlipIcon fontSize="large" />} onClick={(e) => {
                         e.preventDefault();
                         mirrorChangeT();
                     }}
                         >
                         Mirror Video</Button> :
-                    <Button variant="contained" color="primary" className={classes.button} fullWidth startIcon={<CameraAltIcon fontSize="large" /> }onClick={(e) => {
+                    <Button variant="contained" color="primary" className={classes.button} fullWidth startIcon={<FlipIcon fontSize="large" /> }onClick={(e) => {
                         e.preventDefault();
                         mirrorChangeF();
                     }}
@@ -322,7 +324,7 @@ const Client = () => {
             </div>
             </Grid>
             <Grid item xs={12} md={6} className={classes.padding}>
-            <Button variant="contained" color="primary" className={classes.button} fullWidth startIcon={<CameraAltIcon fontSize="large" /> }onClick={(e) => {
+            <Button variant="contained" color="primary" className={classes.button} fullWidth startIcon={<FaceRetouchingNaturalIcon fontSize="large" /> }onClick={(e) => {
                         e.preventDefault();
                         runFacemesh();
                     }}

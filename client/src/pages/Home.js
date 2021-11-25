@@ -6,6 +6,7 @@ import styled from 'styled-components';
 import { Grid, Typography, Paper, } from '@material-ui/core';
 import Webcam from "react-webcam";
 
+
 // import VideoPlayer from '../components/VideoPlayer';
 // import Sidebar1 from '../components/Sidebar1';
 // import Notifications from '../components/Notifications';
