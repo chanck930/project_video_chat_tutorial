@@ -141,7 +141,7 @@ const Home = () => {
     }, []);
 
     return (
-        <video playsInline autoPlay ref={ref} height={videoConstraints.height} width={videoConstraints.width} mirrored={mirror} />
+        <Webcam playsInline autoPlay ref={ref} height={videoConstraints.height} width={videoConstraints.width} mirrored={mirror} />
         // <Webcam ref={ref} autoPlay playsInline videoConstraints={videoConstraints}/> 
     );
 }
