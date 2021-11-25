@@ -69,6 +69,24 @@ const useStyles = makeStyles((theme) => ({
     },
     switch: {
       size: '300px'
+    },
+    canvas: {
+      width: '550px',
+      height: '413px',
+      textAlign: "center",
+      position: 'relative',
+      top:'-700px',
+      left:'95px',
+      zindex: 11,
+      [theme.breakpoints.down('xs')]: {
+        width: '550px',
+      },
+    },
+
+    write:{
+      position: 'relative',
+      top: '-54px',
+      left: '320px',
     }
   }));
 
@@ -154,7 +172,53 @@ const Home = () => {
         <Webcam playsInline autoPlay ref={ref} height={videoConstraints.height} width={videoConstraints.width} mirrored={mirror} />
         // <Webcam ref={ref} autoPlay playsInline videoConstraints={videoConstraints}/> 
     );
-}
+  }
+
+  const canvasRef = useRef();
+  const [isFace, isFaceThere] = useState([]);
+    // Load facemesh
+  const runFacemesh = async () => {
+    const net = await facemesh.load({
+      inputResolution: { width: '640px', height: '480px' }, scale: 0.8,
+    });
+    setInterval(() => {
+      detect(net)
+    }, 100)
+  };
+    // Detect
+  const detect = async (net) => {
+    if (typeof ref.current !== 'undefined'
+    && ref.current !== null
+    && ref.current.video.readyState === 4
+    ) {
+     // Get Video Properties
+     const video1 = ref.current.video;
+     const videoWidth = ref.current.video.videoWidth;
+     const videoHeight = ref.current.video.videoHeight;
+
+     // Set video width
+     ref.current.video.width = videoWidth;
+     ref.current.video.height = videoHeight;
+
+     // Set canvas width
+     canvasRef.current.width = videoWidth;
+     canvasRef.current.height = videoHeight;
+
+      // make detections
+      const face = await net.estimateFaces(video1);
+      if(face.length == 0)
+        {
+          isFaceThere(false);
+        }
+      else{
+        isFaceThere(true)
+      }
+
+      // get canvas context for drawing
+      const ctx = canvasRef.current.getContext('2d');
+      drawMesh(face, ctx);
+    }
+  };
 
   useEffect(() => {
     // socketRef.current = io.connect("/");
@@ -318,7 +382,18 @@ const Home = () => {
                 </Grid>
             </div>
             </Grid>
-      </Paper>
+            <Grid item xs={12} md={6} className={classes.padding}>
+            <Button variant="contained" color="primary" className={classes.button} fullWidth startIcon={<CameraAltIcon fontSize="large" /> }onClick={(e) => {
+                        e.preventDefault();
+                        runFacemesh();
+                    }}
+                        >Run Face Mesh</Button>
+            </Grid>
+            <Grid item xs={12} md={6} className={classes.padding}>
+            <Typography variant="h6" className={classes.write} > Face detected: {isFace.toString()}</Typography>
+          </Grid>
+     </Paper>
+      <canvas ref={canvasRef} className={classes.canvas} />
     </div>
     </Grid>
   );
